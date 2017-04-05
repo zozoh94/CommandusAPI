@@ -7,6 +7,7 @@ from core import views as core_views
 
 router = routers.DefaultRouter()
 router.register(r'dish', core_views.DishViewSet)
+router.register(r'restaurant', core_views.RestaurantViewSet)
 
 urlpatterns = [    
     url(r'^', include(router.urls)),

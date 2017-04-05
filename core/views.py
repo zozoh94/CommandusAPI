@@ -1,8 +1,8 @@
 from rest_framework import viewsets
 from rest_framework import permissions
 
-from .models import Dish
-from .serializers import DishSerializer, DishDetailSerializer
+from .models import Dish, Restaurant
+from .serializers import DishSerializer, DishDetailSerializer, RestaurantSerializer
 
 class DishViewSet(viewsets.ModelViewSet):
     queryset = Dish.objects.all()
@@ -11,3 +11,8 @@ class DishViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, pk=None):
         self.serializer_class = DishDetailSerializer        
         return super(DishViewSet, self).retrieve(request, pk)
+
+class RestaurantViewSet(viewsets.ModelViewSet):
+    queryset = Restaurant.objects.all()
+    serializer_class = RestaurantSerializer
+    permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
