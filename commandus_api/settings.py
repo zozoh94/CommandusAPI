@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'taggit',
     'location_field.apps.DefaultConfig',
     'core',
+    'offer',
 ]
 
 
