@@ -11,7 +11,7 @@ from .models import Dish, Restaurant
 class RestaurantSerializer(serializers.ModelSerializer):    
     class Meta:
         model = Restaurant
-        fields = ('id', 'name', 'address')
+        fields = ('id', 'name', 'address', 'picture')
 
 class DishSerializer(TaggitSerializer, serializers.ModelSerializer):
     ingredients = TagListSerializerField(required=False)
