@@ -29,6 +29,7 @@ ALLOWED_HOSTS = ['.commandus.com']
 
 SITE_ID = 1
 
+AUTH_USER_MODEL = 'user.User'
 
 # Application definition
 
@@ -43,11 +44,21 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'djmoney',
     'corsheaders',
+    'allauth',
+    'allauth.account',
     'rest_framework',
+    'rest_framework.authtoken',
+    'rest_auth',
+    'rest_auth.registration',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.facebook',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.twitter',
     'taggit',
     'location_field.apps.DefaultConfig',
     'core',
     'offer',
+    'user',
 ]
 
 
@@ -73,7 +84,7 @@ ROOT_URLCONF = 'commandus_api.urls.api'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, "user/templates"),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -158,6 +169,55 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
+}
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+REST_AUTH_SERIALIZERS = {
+    'USER_DETAILS_SERIALIZER': 'user.serializers.MyUserDetailsSerializer'
+}
+
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True
+
+ACCOUNT_ADAPTER = 'user.adapter.MyAccountAdapter'
+
+OLD_PASSWORD_FIELD_ENABLED = True
+
+from allauth.account.signals import email_confirmation_sent, email_confirmed
+from django.dispatch import receiver
+
+@receiver(email_confirmation_sent)
+def email_confirmation_sent_(confirmation, **kwargs):
+    user = confirmation.email_address.user
+    user.is_active = False
+    user.save()
+
+@receiver(email_confirmed)
+def email_confirmed_(request, email_address, **kwargs):
+    user = email_address.user
+    user.is_active = True
+    user.save()
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@commandus.com'
+DEFAULT_CONTACT_EMAIL = 'hello@commandus.com'
+
+SOCIALACCOUNT_PROVIDERS = \
+    {'facebook':
+       {'VERIFIED_EMAIL': True}}
+
+SOCIALACCOUNT_ADAPTER = 'user.adapter.MySocialAccountAdapter'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
 }
 
 from commandus_api.parameters import *

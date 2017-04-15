@@ -7,11 +7,22 @@ from django.conf import settings
 from urllib.request import urlopen
 
 from .models import Dish, Restaurant
+from offer.models import Offer
 
-class RestaurantSerializer(serializers.ModelSerializer):    
+class OfferSerializer(serializers.RelatedField):
+    def to_representation(self, value):    
+        return value.name
+    
+class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Restaurant
         fields = ('id', 'name', 'address', 'picture')
+
+class RestaurantDetailSerializer(serializers.ModelSerializer):
+    offers = OfferSerializer(many=True, read_only=True)
+    class Meta:
+        model = Restaurant
+        fields = ('id', 'name', 'address', 'picture', 'offers')
 
 class DishSerializer(TaggitSerializer, serializers.ModelSerializer):
     ingredients = TagListSerializerField(required=False)

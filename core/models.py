@@ -59,3 +59,6 @@ class NumberCategoryMenu(models.Model):
     menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     number = models.IntegerField()
+
+class Review(models.Model):
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='reviews', null=False)
