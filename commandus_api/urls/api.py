@@ -9,6 +9,7 @@ from user import views as user_views
 router = routers.DefaultRouter()
 router.register(r'dish', core_views.DishViewSet)
 router.register(r'restaurant', core_views.RestaurantViewSet)
+router.register(r'menu', core_views.MenuViewSet)
 
 urlpatterns = [    
     url(r'^', include(router.urls)),

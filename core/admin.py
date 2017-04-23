@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Dish, Restaurant, Category, Menu, NumberCategoryMenu
+from .models import Dish, Restaurant, Category, Menu, NumberCategoryMenu, NumberDishMenu, Review
 
 class DishAdmin(admin.ModelAdmin):
     list_display = ('name', 'ingredients_list', 'duration', 'price', 'restaurant', 'categories_list')
@@ -15,8 +15,13 @@ class DishAdmin(admin.ModelAdmin):
     def categories_list(self, obj):
         return u", ".join(o.name for o in obj.categories.all())
 
+class ReviewInline(admin.StackedInline):
+    model = Review
+    extra = 1
+    
 class RestaurantAdmin(admin.ModelAdmin):
     fields = ('name', 'address', 'picture')
+    inlines = (ReviewInline,)
     list_display = ('name', 'address', 'lat', 'lon')
     search_fields = ('name', 'address')
 
@@ -29,10 +34,14 @@ class CategoryAdmin(admin.ModelAdmin):
 class NumberCategoryMenuInline(admin.StackedInline):
     model = NumberCategoryMenu
     extra = 1
+
+class NumberDishMenuInline(admin.StackedInline):
+    model = NumberDishMenu
+    extra = 1
     
 class MenuAdmin(admin.ModelAdmin):
-    fields = ('name', 'restaurant')
-    inlines = (NumberCategoryMenuInline,)
+    fields = ('name', 'description', 'restaurant')
+    inlines = (NumberCategoryMenuInline, NumberDishMenuInline)
     list_display = ('name', 'restaurant')
     list_display_links = ('name', 'restaurant',)
     list_filter = ('restaurant',)

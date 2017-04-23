@@ -30,7 +30,7 @@ class NumberMenuOfferDiscountInline(admin.TabularInline):
     extra = 1
     
 class OfferAdmin(admin.ModelAdmin):
-    fields = ('name', 'restaurant', 'nbrEntries', 'nbrDiscount', 'discount', 'discountOnTotal')
+    fields = ('name', 'description', 'restaurant', 'nbr_entries', 'nbr_discount', 'discount', 'discount_on_total')
     inlines = (NumberCategoryOfferEntryInline, NumberDishOfferEntryInline, NumberMenuOfferEntryInline,
                NumberCategoryOfferDiscountInline, NumberDishOfferDiscountInline, NumberMenuOfferDiscountInline)
     list_display = ('name', 'restaurant')

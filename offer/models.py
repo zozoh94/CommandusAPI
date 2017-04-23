@@ -4,47 +4,48 @@ from core.models import Category, Dish, Menu, Restaurant
 
 class Offer(models.Model):
     name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='offers', null=False)
-    nbrEntries = models.IntegerField(verbose_name='minimum entries number') 
-    nbrDiscount = models.IntegerField(verbose_name='maximum discount number')
-    entryCategories = models.ManyToManyField(
+    nbr_entries = models.IntegerField(verbose_name='minimum entries number') 
+    nbr_discount = models.IntegerField(verbose_name='maximum discount number')
+    entry_categories = models.ManyToManyField(
         Category,
-        related_name='entryOffers',
+        related_name='entry_offers',
         through='NumberCategoryOfferEntry',
         through_fields=('offer', 'category'),
     )
-    entryDishes = models.ManyToManyField(
+    entry_dishes = models.ManyToManyField(
         Dish,
-        related_name='entryOffers',
+        related_name='entry_offers',
         through='NumberDishOfferEntry',
         through_fields=('offer', 'dish'),
     )
-    entryMenus = models.ManyToManyField(
+    entry_menus = models.ManyToManyField(
         Menu,
-        related_name='entryOffers',
+        related_name='entry_offers',
         through='NumberMenuOfferEntry',
         through_fields=('offer', 'menu'),
     )
-    discountCategories = models.ManyToManyField(
+    discount_categories = models.ManyToManyField(
         Category,        
-        related_name='discountOffers',
+        related_name='discount_offers',
         through='NumberCategoryOfferDiscount',
         through_fields=('offer', 'category'),
     )
-    discountDishes = models.ManyToManyField(
+    discount_dishes = models.ManyToManyField(
         Dish,
-        related_name='discountOffers',
+        related_name='discount_offers',
         through='NumberDishOfferDiscount',
         through_fields=('offer', 'dish'),
     )
-    discountMenus = models.ManyToManyField(
+    discount_menus = models.ManyToManyField(
         Menu,
-        related_name='discountOffers',
+        related_name='discount_offers',
         through='NumberMenuOfferDiscount',
         through_fields=('offer', 'menu'),
     )
     discount = models.IntegerField(verbose_name='discount on the offer')
-    discountOnTotal = models.IntegerField(verbose_name='discount on the total')
+    discount_on_total = models.IntegerField(verbose_name='discount on the total')
     def __str__(self):
         return self.name
 
