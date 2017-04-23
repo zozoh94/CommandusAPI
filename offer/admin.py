@@ -7,27 +7,27 @@ from .models import (Offer,
 
 class NumberCategoryOfferEntryInline(admin.TabularInline):
     model = NumberCategoryOfferEntry
-    extra = 1
+    extra = 0
 
 class NumberDishOfferEntryInline(admin.TabularInline):
     model = NumberDishOfferEntry
-    extra = 1
+    extra = 0
 
 class NumberMenuOfferEntryInline(admin.TabularInline):
     model = NumberMenuOfferEntry
-    extra = 1
+    extra = 0
 
 class NumberCategoryOfferDiscountInline(admin.TabularInline):
     model = NumberCategoryOfferDiscount
-    extra = 1
+    extra = 0
 
 class NumberDishOfferDiscountInline(admin.TabularInline):
     model = NumberDishOfferDiscount
-    extra = 1
+    extra = 0
 
 class NumberMenuOfferDiscountInline(admin.TabularInline):
     model = NumberMenuOfferDiscount
-    extra = 1
+    extra = 0
     
 class OfferAdmin(admin.ModelAdmin):
     fields = ('name', 'description', 'restaurant', 'nbr_entries', 'nbr_discount', 'discount', 'discount_on_total')

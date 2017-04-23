@@ -17,7 +17,7 @@ class DishAdmin(admin.ModelAdmin):
 
 class ReviewInline(admin.StackedInline):
     model = Review
-    extra = 1
+    extra = 0
     
 class RestaurantAdmin(admin.ModelAdmin):
     fields = ('name', 'address', 'picture')
@@ -33,11 +33,11 @@ class CategoryAdmin(admin.ModelAdmin):
 
 class NumberCategoryMenuInline(admin.StackedInline):
     model = NumberCategoryMenu
-    extra = 1
+    extra = 0
 
 class NumberDishMenuInline(admin.StackedInline):
     model = NumberDishMenu
-    extra = 1
+    extra = 0
     
 class MenuAdmin(admin.ModelAdmin):
     fields = ('name', 'description', 'restaurant')
