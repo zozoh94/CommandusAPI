@@ -40,7 +40,7 @@ class NumberDishMenuInline(admin.StackedInline):
     extra = 0
     
 class MenuAdmin(admin.ModelAdmin):
-    fields = ('name', 'description', 'restaurant')
+    fields = ('name', 'description', 'restaurant', 'price')
     inlines = (NumberCategoryMenuInline, NumberDishMenuInline)
     list_display = ('name', 'restaurant')
     list_display_links = ('name', 'restaurant',)
