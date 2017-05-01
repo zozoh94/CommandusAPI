@@ -64,7 +64,7 @@ class RestaurantDetailSerializer(serializers.ModelSerializer):
         model = Restaurant
         fields = ('id', 'name', 'address', 'picture',
                   'menus', 'offers', 'reviews', 'dishes',
-                  'schedules')
+                  'schedules', 'open')
 
 
 # DISH

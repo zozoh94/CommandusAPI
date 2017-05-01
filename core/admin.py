@@ -1,6 +1,8 @@
 from django.contrib import admin
 
-from .models import Dish, Restaurant, Category, Menu, NumberCategoryMenu, NumberDishMenu, Review
+from .models import (Dish, Restaurant, Category, Menu,
+                     NumberCategoryMenu, NumberDishMenu,
+                     Review, Schedule, ScheduleTime)
 
 class DishAdmin(admin.ModelAdmin):
     list_display = ('name', 'ingredients_list', 'duration', 'price', 'restaurant', 'categories_list')
@@ -47,8 +49,18 @@ class MenuAdmin(admin.ModelAdmin):
     list_filter = ('restaurant',)
     search_fields = ('name', 'restaurant__name')
 
-
+class ScheduleTimeInline(admin.TabularInline):
+    model = ScheduleTime
+    extra = 0
+    
+class ScheduleAdmin(admin.ModelAdmin):
+    fields = ('day', 'restaurant')
+    inlines = (ScheduleTimeInline,)
+    list_filter = ('restaurant', 'day')
+    search_fields = ('restaurant__name',)
+    
 admin.site.register(Dish, DishAdmin)
 admin.site.register(Restaurant, RestaurantAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Menu, MenuAdmin)
+admin.site.register(Schedule, ScheduleAdmin)

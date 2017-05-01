@@ -7,6 +7,7 @@ from djmoney.models.fields import MoneyField
 from geopy.geocoders import Nominatim
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.conf import settings
+from datetime import time, date, datetime, timedelta
     
 class Restaurant(models.Model):
     name = models.CharField(max_length=255)
@@ -22,21 +23,37 @@ class Restaurant(models.Model):
         self.lat, self.lon = location.latitude, location.longitude
     def location(self):
         return {'lat': self.lat, 'lon': self.lon }
+    def open(self):
+        date_now = date.today()
+        now = datetime.today()
+        day = now.weekday()
+        for schedule in self.schedules.all():
+            if schedule.day == day:
+                for time in schedule.times.all():
+                    opening = datetime.combine(date_now, time.opening_time)
+                    if time.opening_time < time.closing_time:
+                        closing = datetime.combine(date_now, time.closing_time)
+                    else:
+                        closing = datetime.combine(date_now + timedelta(1), time.closing_time)
+                    if opening < now and now < closing:
+                        return True
+        return False
+            
 
 class Schedule(models.Model):    
-    MONDAY = 'MON'
-    TUESDAY = 'TUE'
-    WEDNESDAY = 'WED'
-    THURSDAY = 'THU'
-    FRIDAY = 'FRI'
-    SATURDAY = 'SAT'
-    SUNDAY = 'SUN'
-    DAY_CHOICES = ((MONDAY, 'Monday'), (TUESDAY, 'Tuesday'), (WEDNESDAY, 'Wednesday'), (THURSDAY, 'Thursday'),
-                       (FRIDAY, 'Friday'), (SATURDAY, 'Saturday'), (SUNDAY, 'Sunday'))
-    day = models.CharField(null=False, max_length=3, choices=DAY_CHOICES)
+    DAY_CHOICES = ((0, 'Monday'), (1, 'Tuesday'), (2, 'Wednesday'), (3, 'Thursday'),
+                       (4, 'Friday'), (5, 'Saturday'), (6, 'Sunday'))
+    day = models.SmallIntegerField(null=False, choices=DAY_CHOICES)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='schedules', null=False)
     ordering = ('day',)
-
+    def __str__(self):
+        string = str(dict(self.DAY_CHOICES).get(self.day)) + ' ('
+        for i, time in enumerate(self.times.all()):
+            string += time.opening_time.strftime('%H:%M') + '-' + time.closing_time.strftime('%H:%M')
+            if i < len(self.times.all())-1:
+                string += ', '
+        return string + ')'
+        
 class ScheduleTime(models.Model):
     opening_time = models.TimeField()
     closing_time = models.TimeField()
