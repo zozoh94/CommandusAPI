@@ -7,40 +7,63 @@ from django.conf import settings
 from urllib.request import urlopen
 
 from .models import Dish, Restaurant, Menu, Review, Category
+from .models import NumberCategoryMenu, NumberDishMenu
 from offer.models import Offer
 
 class OfferSerializer(serializers.RelatedField):
     def to_representation(self, value):    
         return (value.name + ('(' + value.description + ') ' if value.description else ''))
 
-class MenuSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Menu
-        fields = ('id', 'url', 'name', 'description')
-    
-class MenuDetailSerializer(serializers.ModelSerializer):
-    offers = OfferSerializer(many=True, read_only=True)
-    class Meta:
-        model = Menu
-        fields = ('id', 'name', 'description', 'offers')
+# RESTAURANT
 
-class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source='author.username') 
-    class Meta:
-        model = Review
-        fields = ('note', 'description', 'author')
-    
 class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Restaurant
         fields = ('id', 'url', 'name', 'address', 'picture')
 
-class DishSerializer(TaggitSerializer, serializers.ModelSerializer):
+class RestaurantInSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Restaurant
+        fields = ('url', 'name', 'address', 'picture')
+        
+class ReviewInRestaurantSerializer(serializers.ModelSerializer):
+    author = serializers.ReadOnlyField(source='author.username') 
+    class Meta:
+        model = Review
+        fields = ('id', 'url', 'note', 'description', 'author')
+        
+class DishInRestaurantSerializer(serializers.ModelSerializer):
     ingredients = TagListSerializerField(required=False)
-    restaurant_url = serializers.HyperlinkedRelatedField(view_name='restaurant-detail', read_only=True, source='restaurant')
     class Meta:
         model = Dish
-        fields = ('id', 'url', 'name', 'ingredients', 'price', 'picture', 'restaurant_url')
+        fields = ('id', 'url', 'name', 'ingredients', 'price', 'picture')
+
+class MenuInRestaurantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Menu
+        fields = ('id', 'url', 'name', 'price', 'description')
+        
+class RestaurantDetailSerializer(serializers.ModelSerializer):
+    offers = OfferSerializer(many=True, read_only=True)
+    menus = MenuInRestaurantSerializer(many=True, read_only=True)
+    reviews = ReviewInRestaurantSerializer(many=True, read_only=True)
+    dishes = DishInRestaurantSerializer(many=True, read_only=True)
+    class Meta:
+        model = Restaurant
+        fields = ('id', 'name', 'address', 'picture',
+                  'menus', 'offers', 'reviews', 'dishes')
+
+
+# DISH
+        
+class DishSerializer(TaggitSerializer, serializers.ModelSerializer):
+    ingredients = TagListSerializerField(required=False)
+    restaurant_url = serializers.HyperlinkedRelatedField(view_name='restaurant-detail',
+                                                         read_only=True, source='restaurant')
+    class Meta:
+        model = Dish
+        fields = ('id', 'url', 'name', 'ingredients', 'price', 'picture',
+                  'restaurant_url')
 
 class IngredientsSerializer(serializers.BaseSerializer):
     def to_representation(self, obj):
@@ -61,11 +84,11 @@ class IngredientsSerializer(serializers.BaseSerializer):
                     else:
                         cache.set(ingredient, picture, 1296000)
                 except:
-                    picture = None
+                    pass
                 ingredients.append({'name': ingredient, 'picture': picture})
         return ingredients
 
-class CategorySerializer(serializers.ModelSerializer):
+class CategoryInDishSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         return obj.name
     class Meta:
@@ -75,28 +98,106 @@ class MenuInDishSerializer(serializers.ModelSerializer):
     offers = OfferSerializer(many=True, read_only=True)
     class Meta:
         model = Menu
-        fields = ('id', 'name', 'description', 'offers')
+        fields = ('id', 'url', 'name', 'price', 'description', 'offers')
         
-class DishDetailSerializer(DishSerializer):
-    restaurant_detail = RestaurantSerializer(read_only=True, source='restaurant')
+class DishDetailSerializer(serializers.ModelSerializer):
+    restaurant_detail = RestaurantInSerializer(read_only=True, source='restaurant')
     ingredients_with_pictures = IngredientsSerializer(read_only=True, source='ingredients')
     menus = MenuInDishSerializer(many=True, read_only=True)
-    categories = CategorySerializer(many=True)
+    categories = CategoryInDishSerializer(many=True)
     offers = OfferSerializer(many=True, read_only=True)
     class Meta:
         model = Dish
-        fields = ('id', 'name', 'ingredients_with_pictures', 'duration', 'price', 'picture', 'restaurant_detail', 'categories', 'menus', 'offers')
+        fields = ('id', 'name', 'ingredients_with_pictures', 'duration', 'price', 'picture',
+                  'restaurant', 'restaurant_detail', 'categories', 'menus', 'offers')
 
-class DishInRestaurantSerializer(DishDetailSerializer):
+
+# CATEGORY
+
+class CategorySerializer(serializers.ModelSerializer):
+    restaurant_url = serializers.HyperlinkedRelatedField(view_name='restaurant-detail',
+                                                         read_only=True, source='restaurant')
+    class Meta:
+        model = Category
+        fields = ('id', 'url', 'name', 'restaurant_url')
+
+class MenuInCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Menu
+        fields = ('id', 'url', 'name', 'price', 'description')
+
+class DishInCategorySerializer(serializers.ModelSerializer):
+    ingredients = TagListSerializerField(required=False)
     class Meta:
         model = Dish
         fields = ('id', 'url', 'name', 'ingredients', 'price', 'picture')
 
-class RestaurantDetailSerializer(serializers.ModelSerializer):
-    offers = OfferSerializer(many=True, read_only=True)
-    menus = MenuSerializer(many=True, read_only=True)
-    reviews = ReviewSerializer(many=True, read_only=True)
-    dishes = DishInRestaurantSerializer(many=True, read_only=True)
+class CategoryDetailSerializer(serializers.ModelSerializer):
+    restaurant_detail = RestaurantInSerializer(read_only=True, source='restaurant')
+    menus = MenuInCategorySerializer(many=True, read_only=True)
+    dishes = DishInCategorySerializer(many=True, read_only=True)
     class Meta:
-        model = Restaurant
-        fields = ('id', 'name', 'address', 'picture', 'menus', 'offers', 'reviews', 'dishes')
+        model = Category
+        fields = ('id', 'name', 'restaurant', 'restaurant_detail', 'menus', 'dishes')
+
+        
+# REVIEW
+        
+class ReviewSerializer(serializers.ModelSerializer):
+    restaurant_url = serializers.HyperlinkedRelatedField(view_name='restaurant-detail',
+                                                         read_only=True, source='restaurant')
+    author = serializers.ReadOnlyField(source='author.username') 
+    class Meta:
+        model = Review
+        fields = ('id', 'url', 'description', 'note', 'author', 'restaurant_url')
+
+class ReviewDetailSerializer(serializers.ModelSerializer):
+    restaurant_detail = RestaurantInSerializer(read_only=True, source='restaurant')
+    author_username = serializers.ReadOnlyField(source='author.username') 
+    class Meta:
+        model = Review
+        fields = ('id', 'url', 'description', 'note', 'author', 'author_username',
+                  'restaurant', 'restaurant_detail')
+
+        
+# MENU
+
+class MenuSerializer(serializers.ModelSerializer):
+    restaurant_url = serializers.HyperlinkedRelatedField(view_name='restaurant-detail',
+                                                         read_only=True, source='restaurant')
+    class Meta:
+        model = Menu
+        fields = ('id', 'url', 'name', 'price', 'description', 'restaurant_url')
+        
+class DishInMenuSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Dish
+        fields = ('id', 'url', 'name', 'ingredients', 'price', 'picture')
+
+class NumberDishMenuSerializer(serializers.ModelSerializer):
+    dish = DishInMenuSerializer()
+    class Meta:
+        model = NumberDishMenu
+        fields = ('number', 'dish')        
+
+class CategoryInMenuSerializer(serializers.ModelSerializer):
+    dishes = DishInCategorySerializer(many=True, read_only=True)
+    class Meta:
+        model = Category
+        fields = ('id', 'url', 'name', 'dishes')
+        
+class NumberCategoryMenuSerializer(serializers.ModelSerializer):
+    category = CategoryInMenuSerializer()
+    class Meta:
+        model = NumberCategoryMenu
+        fields = ('number', 'category')
+        
+class MenuDetailSerializer(serializers.ModelSerializer):
+    offers = OfferSerializer(many=True, read_only=True)
+    restaurant_detail = RestaurantInSerializer(read_only=True, source='restaurant')
+    dishes = NumberDishMenuSerializer(many=True, source='numberdishmenu_set') 
+    categories = NumberCategoryMenuSerializer(many=True, source='numbercategorymenu_set') 
+    class Meta:
+        model = Menu
+        fields = ('id', 'name', 'price', 'description', 'dishes', 'categories', 'offers',
+                  'restaurant', 'restaurant_detail')

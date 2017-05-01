@@ -61,15 +61,12 @@ class Dish(models.Model):
         return offers
     def __str__(self):
         return self.name
-    def clean(self):
-        for category in self.categories.all():
-            if category.restaurant != self.restaurant:
-                raise ValidationError({'categories': _('There is one or many categories which are not associated to '
-                                                       + 'the restaurant of the dish.')})
+
 class Menu(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='menus', null=False)
+    price = MoneyField(max_digits=10, decimal_places=2, default_currency='EUR')
     categories = models.ManyToManyField(
         Category,
         related_name='menus',
@@ -86,15 +83,6 @@ class Menu(models.Model):
         return self.entry_offers.all()
     def __str__(self):
         return self.name
-    def clean(self):
-        for category in self.categories.all():
-            if category.restaurant != self.restaurant:
-                raise ValidationError({'categories': _('There is one or many categories which are not associated to '
-                                                       + 'the restaurant of the menu.')})
-        for dish in self.dishes.all():
-            if dish.restaurant != self.restaurant:
-                raise ValidationError({'dishes': _('There is one or many dishes which are not associated to '
-                                                       + 'the restaurant of the menu.')})
 
 class NumberCategoryMenu(models.Model):
     menu = models.ForeignKey(Menu, on_delete=models.CASCADE)

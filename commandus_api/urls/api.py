@@ -5,11 +5,15 @@ from rest_framework import routers
 
 from core import views as core_views
 from user import views as user_views
+from offer import views as offer_views
 
 router = routers.DefaultRouter()
 router.register(r'dish', core_views.DishViewSet)
 router.register(r'restaurant', core_views.RestaurantViewSet)
 router.register(r'menu', core_views.MenuViewSet)
+router.register(r'category', core_views.CategoryViewSet)
+router.register(r'review', core_views.ReviewViewSet)
+router.register(r'offer', offer_views.OfferViewSet)
 
 urlpatterns = [    
     url(r'^', include(router.urls)),
