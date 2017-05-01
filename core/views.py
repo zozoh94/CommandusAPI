@@ -1,15 +1,15 @@
 from rest_framework import viewsets
 from rest_framework import permissions
-from rest_framework.decorators import detail_route
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import LimitOffsetPagination
 
-from .models import Dish, Restaurant, Menu, Category, Review
+from .models import Dish, Restaurant, Menu, Category, Review, Schedule
 from .serializers import (DishSerializer, DishDetailSerializer,
                           RestaurantSerializer, RestaurantDetailSerializer,
                           MenuSerializer, MenuDetailSerializer,
                           CategorySerializer, CategoryDetailSerializer,
-                          ReviewSerializer, ReviewDetailSerializer)
+                          ReviewSerializer, ReviewDetailSerializer,
+                          ScheduleSerializer, ScheduleDetailSerializer)
 
 class RestaurantViewSet(viewsets.ModelViewSet):
     queryset = Restaurant.objects.all()
@@ -63,3 +63,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, pk=None):
         self.serializer_class = ReviewDetailSerializer        
         return super(ReviewViewSet, self).retrieve(request, pk)
+
+class ScheduleViewSet(viewsets.ModelViewSet):
+    queryset = Schedule.objects.all()
+    serializer_class = ScheduleSerializer
+    permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('restaurant', 'day')
+    pagination_class = LimitOffsetPagination
+    def retrieve(self, request, pk=None):
+        self.serializer_class = ScheduleDetailSerializer        
+        return super(ScheduleViewSet, self).retrieve(request, pk)
+    

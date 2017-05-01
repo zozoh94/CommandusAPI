@@ -14,6 +14,7 @@ router.register(r'menu', core_views.MenuViewSet)
 router.register(r'category', core_views.CategoryViewSet)
 router.register(r'review', core_views.ReviewViewSet)
 router.register(r'offer', offer_views.OfferViewSet)
+router.register(r'schedule', core_views.ScheduleViewSet)
 
 urlpatterns = [    
     url(r'^', include(router.urls)),

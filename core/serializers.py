@@ -6,7 +6,7 @@ import json
 from django.conf import settings
 from urllib.request import urlopen
 
-from .models import Dish, Restaurant, Menu, Review, Category
+from .models import Dish, Restaurant, Menu, Review, Category, Schedule, ScheduleTime
 from .models import NumberCategoryMenu, NumberDishMenu
 from offer.models import Offer
 
@@ -21,6 +21,17 @@ class RestaurantSerializer(serializers.ModelSerializer):
         model = Restaurant
         fields = ('id', 'url', 'name', 'address', 'picture')
 
+class ScheduleTimeInRestaurantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ScheduleTime
+        fields = ('opening_time', 'closing_time')
+        
+class ScheduleInRestaurantSerializer(serializers.ModelSerializer):
+    times = ScheduleTimeInRestaurantSerializer(many=True, read_only=True)
+    class Meta:
+        model = Schedule
+        fields = ('day', 'times')
+    
 class RestaurantInSerializer(serializers.ModelSerializer):
     class Meta:
         model = Restaurant
@@ -48,10 +59,12 @@ class RestaurantDetailSerializer(serializers.ModelSerializer):
     menus = MenuInRestaurantSerializer(many=True, read_only=True)
     reviews = ReviewInRestaurantSerializer(many=True, read_only=True)
     dishes = DishInRestaurantSerializer(many=True, read_only=True)
+    schedules = ScheduleInRestaurantSerializer(many=True, read_only=True)
     class Meta:
         model = Restaurant
         fields = ('id', 'name', 'address', 'picture',
-                  'menus', 'offers', 'reviews', 'dishes')
+                  'menus', 'offers', 'reviews', 'dishes',
+                  'schedules')
 
 
 # DISH
@@ -201,3 +214,25 @@ class MenuDetailSerializer(serializers.ModelSerializer):
         model = Menu
         fields = ('id', 'name', 'price', 'description', 'dishes', 'categories', 'offers',
                   'restaurant', 'restaurant_detail')
+
+# SCHEDULE
+
+class ScheduleTimeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ScheduleTime
+        fields = ('opening_time', 'closing_time')
+        
+class ScheduleSerializer(serializers.ModelSerializer):
+    restaurant_url = serializers.HyperlinkedRelatedField(view_name='restaurant-detail',
+                                                         read_only=True, source='restaurant')
+    times = ScheduleTimeSerializer(many=True, read_only=True)
+    class Meta:
+        model = Schedule
+        fields = ('id', 'url', 'day', 'times', 'restaurant_url')  
+        
+class ScheduleDetailSerializer(serializers.ModelSerializer):
+    restaurant_detail = RestaurantInSerializer(read_only=True, source='restaurant')
+    times = ScheduleTimeSerializer(many=True)
+    class Meta:
+        model = Schedule
+        fields = ('id', 'day', 'times', 'restaurant', 'restaurant_detail')  

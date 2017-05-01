@@ -7,7 +7,7 @@ from djmoney.models.fields import MoneyField
 from geopy.geocoders import Nominatim
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.conf import settings
-
+    
 class Restaurant(models.Model):
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255, null=True)
@@ -20,7 +20,28 @@ class Restaurant(models.Model):
         geolocator = Nominatim()
         location = geolocator.geocode(self.address)
         self.lat, self.lon = location.latitude, location.longitude
+    def location(self):
+        return {'lat': self.lat, 'lon': self.lon }
 
+class Schedule(models.Model):    
+    MONDAY = 'MON'
+    TUESDAY = 'TUE'
+    WEDNESDAY = 'WED'
+    THURSDAY = 'THU'
+    FRIDAY = 'FRI'
+    SATURDAY = 'SAT'
+    SUNDAY = 'SUN'
+    DAY_CHOICES = ((MONDAY, 'Monday'), (TUESDAY, 'Tuesday'), (WEDNESDAY, 'Wednesday'), (THURSDAY, 'Thursday'),
+                       (FRIDAY, 'Friday'), (SATURDAY, 'Saturday'), (SUNDAY, 'Sunday'))
+    day = models.CharField(null=False, max_length=3, choices=DAY_CHOICES)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='schedules', null=False)
+    ordering = ('day',)
+
+class ScheduleTime(models.Model):
+    opening_time = models.TimeField()
+    closing_time = models.TimeField()
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, related_name='times', null=False)
+    
 class Category(models.Model):
     name = models.CharField(max_length=255)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='categories', null=False)
