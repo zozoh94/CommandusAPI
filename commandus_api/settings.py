@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.twitter',
     'taggit',
     'location_field.apps.DefaultConfig',
+    'django_extensions',
     'core',
     'offer',
     'user',
@@ -222,4 +223,10 @@ CACHES = {
     }
 }
 
+from elasticsearch_dsl.connections import connections
+
+ELASTICSEARCH_HOST = 'localhost'
+connections.create_connection(hosts=[ELASTICSEARCH_HOST], timeout=20)
+
 from commandus_api.parameters import *
+

@@ -4,7 +4,7 @@ from django.dispatch import receiver
 from taggit.managers import TaggableManager
 import moneyed
 from djmoney.models.fields import MoneyField
-from geopy.geocoders import Nominatim
+from geopy.geocoders import GoogleV3 as Nominatim
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.conf import settings
 from datetime import time, date, datetime, timedelta
@@ -17,10 +17,12 @@ class Restaurant(models.Model):
     picture = models.ImageField(upload_to='restaurant_picture', null=True, blank=True)
     def __str__(self):
         return self.name
-    def pre_save(self):
+    @staticmethod
+    def pre_save(sender, instance, **kwargs):
         geolocator = Nominatim()
-        location = geolocator.geocode(self.address)
-        self.lat, self.lon = location.latitude, location.longitude
+        location = geolocator.geocode(instance.address)
+        if location:
+            instance.lat, instance.lon = location.latitude, location.longitude
     def location(self):
         return {'lat': self.lat, 'lon': self.lon }
     def open(self):
@@ -38,8 +40,9 @@ class Restaurant(models.Model):
                     if opening < now and now < closing:
                         return True
         return False
-            
 
+pre_save.connect(Restaurant.pre_save, Restaurant) 
+    
 class Schedule(models.Model):    
     DAY_CHOICES = ((0, 'Monday'), (1, 'Tuesday'), (2, 'Wednesday'), (3, 'Thursday'),
                        (4, 'Friday'), (5, 'Saturday'), (6, 'Sunday'))

@@ -2,6 +2,13 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.decorators import list_route
+from rest_framework.response import Response
+from rest_framework import status
+
+from elasticsearch import Elasticsearch
+from elasticsearch_dsl import Search
+from elasticsearch_dsl.query import MultiMatch, Q
 
 from .models import Dish, Restaurant, Menu, Category, Review, Schedule
 from .serializers import (DishSerializer, DishDetailSerializer,
@@ -19,7 +26,31 @@ class RestaurantViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, pk=None):        
         self.serializer_class = RestaurantDetailSerializer        
         return super(RestaurantViewSet, self).retrieve(request, pk)
-
+    @list_route()
+    def search(self, request):
+        lat = request.query_params.get('lat', None)
+        lon = request.query_params.get('lon', None)
+        distance = request.query_params.get('distance', '10km')
+        q = request.query_params.get('q', None)
+        client = Elasticsearch()
+        s = Search(using=client, index="commandus", doc_type="restaurant_index")
+        if lat and lon:
+            s = s.filter('geo_distance', distance=distance, location={'lat': lat, 'lon': lon})
+        if q:
+            q = Q('bool',
+                  must=[Q('bool',
+                          should=[Q('simple_query_string', query=q, fields=['_all']),
+                          MultiMatch(query=q, type='phrase_prefix', fields=['name^2', 'address'])]                     
+                  )],
+            )
+            s = s.query(q)
+        response = s.execute()
+        restaurants_ids = [hit.pk for hit in response.hits]
+        restaurants = Restaurant.objects.filter(id__in=[hit.pk for hit in response.hits])
+        serializer = self.get_serializer(restaurants, many=True)
+        return Response(serializer.data)
+        
+    
 class DishViewSet(viewsets.ModelViewSet):
     queryset = Dish.objects.all()
     serializer_class = DishSerializer
