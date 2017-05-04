@@ -8,13 +8,22 @@ from geopy.geocoders import GoogleV3 as Nominatim
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.conf import settings
 from datetime import time, date, datetime, timedelta
-    
+from phonenumber_field.modelfields import PhoneNumberField
+
 class Restaurant(models.Model):
     name = models.CharField(max_length=255)
-    address = models.CharField(max_length=255, null=True)
+    address = models.CharField(max_length=255, blank=True)
     lat = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True, verbose_name='latitude')
     lon = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True, verbose_name='longitude')
     picture = models.ImageField(upload_to='restaurant_picture', null=True, blank=True)
+    phone_number = PhoneNumberField(blank=True)
+    delivery_time = models.DurationField(null=True)
+    price_rank = models.IntegerField(default=5,
+                               validators=[
+                                   MaxValueValidator(5),
+                                   MinValueValidator(1)
+                               ]
+    )
     def __str__(self):
         return self.name
     @staticmethod

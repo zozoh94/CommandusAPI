@@ -19,7 +19,7 @@ class OfferSerializer(serializers.RelatedField):
 class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Restaurant
-        fields = ('id', 'url', 'name', 'address', 'picture')
+        fields = ('id', 'url', 'name', 'address', 'picture', 'delivery_time', 'price_rank')
 
 class ScheduleTimeInRestaurantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -64,7 +64,9 @@ class RestaurantDetailSerializer(serializers.ModelSerializer):
         model = Restaurant
         fields = ('id', 'name', 'address', 'picture',
                   'menus', 'offers', 'reviews', 'dishes',
-                  'schedules', 'open')
+                  'schedules', 'open',
+                  'delivery_time', 'phone_number',
+                  'price_rank')
 
 
 # DISH

@@ -22,7 +22,7 @@ class ReviewInline(admin.StackedInline):
     extra = 0
     
 class RestaurantAdmin(admin.ModelAdmin):
-    fields = ('name', 'address', 'picture')
+    fields = ('name', 'address', 'picture', 'delivery_time', 'phone_number', 'price_rank')
     inlines = (ReviewInline,)
     list_display = ('name', 'address', 'lat', 'lon')
     search_fields = ('name', 'address')

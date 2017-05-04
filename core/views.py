@@ -3,7 +3,6 @@ from rest_framework import permissions
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.decorators import list_route
-from rest_framework.response import Response
 from rest_framework import status
 
 from elasticsearch import Elasticsearch
@@ -46,9 +45,8 @@ class RestaurantViewSet(viewsets.ModelViewSet):
             s = s.query(q)
         response = s.execute()
         restaurants_ids = [hit.pk for hit in response.hits]
-        restaurants = Restaurant.objects.filter(id__in=[hit.pk for hit in response.hits])
-        serializer = self.get_serializer(restaurants, many=True)
-        return Response(serializer.data)
+        self.queryset = Restaurant.objects.filter(id__in=[hit.pk for hit in response.hits])
+        return super(RestaurantViewSet, self).list(request)
         
     
 class DishViewSet(viewsets.ModelViewSet):

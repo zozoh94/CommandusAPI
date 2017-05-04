@@ -6,6 +6,7 @@ from rest_framework import routers
 from core import views as core_views
 from user import views as user_views
 from offer import views as offer_views
+from order import views as order_views
 
 router = routers.DefaultRouter()
 router.register(r'dish', core_views.DishViewSet)
@@ -26,5 +27,7 @@ urlpatterns = [
     url(r'^auth/', include('rest_auth.urls')),
     url(r'^auth/registration/', include('rest_auth.registration.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^calculate-basket/$', order_views.calculate_basket_price),
+    #url(r"^payments/", include("payments.api.urls")),
     url(r'^robots.txt$', lambda r: HttpResponse("User-agent: *\nDisallow: /", content_type="text/plain"))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

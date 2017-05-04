@@ -57,9 +57,12 @@ INSTALLED_APPS = [
     'taggit',
     'location_field.apps.DefaultConfig',
     'django_extensions',
+    #'payments',
+    'phonenumber_field',
     'core',
     'offer',
     'user',
+    'order',
 ]
 
 
